@@ -1,5 +1,5 @@
 
-export const getGameCommentary = (score: number): string => {
+export const getGameCommentary = (score) => {
   if (score === 0) return "Instant regret.";
   if (score < 5) return "That was... quick. Try opening your eyes!";
   if (score < 10) return "Gravity is a harsh mistress.";

@@ -14,18 +14,40 @@
         -webkit-user-select: none;
       }
     </style>
-  <script type="importmap">
+    
+    <!-- 1. Load React Core -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- 2. Load Babel for in-browser compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/"
   }
 }
 </script>
 </head>
   <body class="bg-slate-900 text-white overflow-hidden">
-    <div id="root"></div>
+    <div id="root">
+        <div class="h-screen w-full flex items-center justify-center text-white/50 animate-pulse">
+            Loading Game Assets...
+        </div>
+    </div>
+
+    <!-- 3. Load Application Scripts in Dependency Order -->
+    <!-- 'type="text/babel"' tells browser to let Babel handle these files -->
+    
+    <script type="text/babel" src="./types.ts"></script>
+    <script type="text/babel" src="./constants.ts"></script>
+    <script type="text/babel" src="./services/geminiService.ts"></script>
+    <script type="text/babel" src="./components/Building.tsx"></script>
+    <script type="text/babel" src="./components/FireObstacle.tsx"></script>
+    <script type="text/babel" src="./components/Game.tsx"></script>
+    <script type="text/babel" src="./App.tsx"></script>
+    <script type="text/babel" src="./index.tsx"></script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Game from './components/Game';
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <div className="w-full h-screen bg-slate-800 flex items-center justify-center">
       <Game />

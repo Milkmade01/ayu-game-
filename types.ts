@@ -1,23 +1,13 @@
-export enum GameState {
-  START = 'START',
-  READY = 'READY',
-  PLAYING = 'PLAYING',
-  GAME_OVER = 'GAME_OVER'
-}
+// Global Types
+// Interfaces are removed by Babel during compilation
+// Enums become objects
 
-export interface Obstacle {
-  id: number;
-  x: number;
-  gapTop: number; // The Y position of the top of the gap
-  gapHeight: number; // The height of the safe gap
-  width: number;
-  passed: boolean;
-}
+export const GameState = {
+  START: 'START',
+  READY: 'READY',
+  PLAYING: 'PLAYING',
+  GAME_OVER: 'GAME_OVER'
+};
 
-export interface GameConfig {
-  gravity: number;
-  jumpStrength: number;
-  speed: number;
-  obstacleSpawnRate: number; // in frames
-  obstacleGapHeight: number;
-}
+// TypeScript interfaces are stripped by Babel, so we can leave them here for reference or just ignore them.
+// Since we are running in a "script" mode effectively, we don't export.

@@ -1,18 +1,25 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState, Obstacle } from '../types';
-import { ASSETS, PHYSICS, DIMENSIONS } from '../constants';
-import { Building } from './Building';
-import { getGameCommentary } from '../services/geminiService';
-import { Play, RotateCcw, Hand, Check, Download } from 'lucide-react';
 
-const Game: React.FC = () => {
-  const [gameState, setGameState] = useState<GameState>(GameState.START);
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { GameState } from '../types';
+import { ASSETS, PHYSICS, DIMENSIONS } from '../constants';
+import { getGameCommentary } from '../services/geminiService';
+import Building from './Building';
+
+// Inline Icons (replacing Lucide-React to avoid dependency)
+const CheckIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+const PlayIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+const HandIcon = () => <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg>;
+const RotateCcwIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>;
+const DownloadIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+
+const Game = () => {
+  const [gameState, setGameState] = useState(GameState.START);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [birdY, setBirdY] = useState(DIMENSIONS.GAME_HEIGHT / 2);
   const [birdRotation, setBirdRotation] = useState(0);
-  const [obstacles, setObstacles] = useState<Obstacle[]>([]);
-  const [commentary, setCommentary] = useState<string>("");
+  const [obstacles, setObstacles] = useState([]);
+  const [commentary, setCommentary] = useState("");
   const [selectedCharIndex, setSelectedCharIndex] = useState(0);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
@@ -20,34 +27,48 @@ const Game: React.FC = () => {
   const stateRef = useRef({
     birdY: DIMENSIONS.GAME_HEIGHT / 2,
     velocity: 0,
-    obstacles: [] as Obstacle[],
+    obstacles: [],
     score: 0,
     frames: 0,
     gameStatus: GameState.START
   });
 
-  const requestRef = useRef<number>();
+  const requestRef = useRef();
   
   // Audio Refs
-  const audioTracksRef = useRef<HTMLAudioElement[]>([]);
+  const audioTracksRef = useRef([]);
+  const gameStartSoundRef = useRef(null);
   // Start at index 0 (first track)
   const currentSoundIndexRef = useRef(0);
 
   // Initialize Audio
   useEffect(() => {
-    // Preload sounds into refs
+    // Preload game over sounds
     audioTracksRef.current = ASSETS.GAME_OVER_SOUNDS.map(src => {
       const audio = new Audio(src);
       audio.preload = 'auto'; 
       return audio;
     });
+
+    // Preload start sound
+    const startAudio = new Audio(ASSETS.GAME_START_SOUND);
+    startAudio.preload = 'auto';
+    gameStartSoundRef.current = startAudio;
   }, []);
 
   const stopAllSounds = useCallback(() => {
-    audioTracksRef.current.forEach(audio => {
-      audio.pause();
-      audio.currentTime = 0;
-    });
+    // Stop game over sounds
+    if(audioTracksRef.current) {
+        audioTracksRef.current.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+        });
+    }
+    // Stop start sound
+    if (gameStartSoundRef.current) {
+      gameStartSoundRef.current.pause();
+      gameStartSoundRef.current.currentTime = 0;
+    }
   }, []);
 
   const playGameOverSound = useCallback(() => {
@@ -82,7 +103,7 @@ const Game: React.FC = () => {
     const maxHeight = DIMENSIONS.GAME_HEIGHT - PHYSICS.OBSTACLE_GAP - minHeight;
     const gapTop = Math.floor(Math.random() * (maxHeight - minHeight + 1)) + minHeight;
 
-    const newObstacle: Obstacle = {
+    const newObstacle = {
       id: Date.now(),
       x: DIMENSIONS.GAME_WIDTH,
       gapTop,
@@ -96,6 +117,13 @@ const Game: React.FC = () => {
 
   const resetGame = () => {
     stopAllSounds(); // Stop any playing sounds
+    
+    // Play Start Sound
+    if (gameStartSoundRef.current) {
+      gameStartSoundRef.current.volume = 0.5;
+      gameStartSoundRef.current.play().catch(e => console.log("Start sound blocked", e));
+    }
+
     // Reset to READY state
     setGameState(GameState.READY);
     setScore(0);
@@ -234,7 +262,7 @@ const Game: React.FC = () => {
 
   // Keyboard controls
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         if (gameState === GameState.START) return; // Don't start from spacebar on selection screen
         jump();
@@ -244,7 +272,7 @@ const Game: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [jump, gameState]);
 
-  const handleDownloadStats = async (e: React.MouseEvent) => {
+  const handleDownloadStats = async (e) => {
     e.stopPropagation();
     if (isGeneratingImage) return;
     setIsGeneratingImage(true);
@@ -428,7 +456,8 @@ const Game: React.FC = () => {
             alt="Character" 
             className="w-full h-full rounded-full border-2 border-white shadow-lg object-cover bg-white"
             onError={(e) => {
-               (e.target as HTMLImageElement).src = 'https://picsum.photos/40/40';
+               // @ts-ignore
+               e.target.src = 'https://picsum.photos/40/40';
             }}
           />
         </div>
@@ -460,7 +489,7 @@ const Game: React.FC = () => {
                   <div className="mt-2 text-xs text-white font-bold bg-black/50 rounded px-1">{char.name}</div>
                   {selectedCharIndex === index && (
                     <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 border-2 border-white">
-                      <Check size={12} className="text-white" />
+                      <CheckIcon />
                     </div>
                   )}
                 </div>
@@ -471,7 +500,7 @@ const Game: React.FC = () => {
               onClick={(e) => { e.stopPropagation(); resetGame(); }}
               className="flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg shadow-lg border-b-4 border-green-700 transition-all active:border-b-0 active:translate-y-1 animate-pulse"
             >
-              <Play size={24} /> START GAME
+              <div className="mr-2"><PlayIcon /></div> START GAME
             </button>
           </div>
         )}
@@ -481,7 +510,7 @@ const Game: React.FC = () => {
            <div className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none">
              <div className="text-white font-bold text-3xl mb-12 drop-shadow-lg stroke-black">GET READY!</div>
              <div className="animate-pulse bg-white/20 p-4 rounded-full backdrop-blur-sm">
-                <Hand className="w-12 h-12 text-white" />
+                <div className="text-white"><HandIcon /></div>
              </div>
              <p className="text-white mt-4 font-bold drop-shadow-md">Tap to Flap</p>
            </div>
@@ -528,7 +557,7 @@ const Game: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); resetGame(); }}
                   className="flex-1 flex justify-center items-center gap-2 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm rounded-lg shadow-lg border-b-4 border-blue-700 active:border-b-0 active:translate-y-1"
                 >
-                  <RotateCcw size={16} /> RETRY
+                  <RotateCcwIcon /> RETRY
                 </button>
               </div>
 
@@ -538,7 +567,7 @@ const Game: React.FC = () => {
                 disabled={isGeneratingImage}
                 className="w-full flex justify-center items-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-lg shadow-lg border-b-4 border-purple-800 active:border-b-0 active:translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Download size={16} /> 
+                <DownloadIcon /> 
                 {isGeneratingImage ? 'SAVING...' : 'SAVE STATS'}
               </button>
 

@@ -1,16 +1,11 @@
 import React from 'react';
-import { Obstacle } from '../types';
 import { DIMENSIONS } from '../constants';
 
-interface FireObstacleProps {
-  obstacle: Obstacle;
-}
-
-export const FireObstacle: React.FC<FireObstacleProps> = ({ obstacle }) => {
+const FireObstacle = ({ obstacle }) => {
   const bottomBuildingHeight = DIMENSIONS.GAME_HEIGHT - obstacle.gapTop - obstacle.gapHeight;
 
   return (
-    <>
+    <React.Fragment>
       <style>
         {`
           @keyframes fire-flow {
@@ -95,6 +90,8 @@ export const FireObstacle: React.FC<FireObstacleProps> = ({ obstacle }) => {
         {/* Top edge glow */}
         <div className="absolute top-0 w-full h-4 bg-gradient-to-b from-yellow-300 to-transparent opacity-80" />
       </div>
-    </>
+    </React.Fragment>
   );
 };
+
+export default FireObstacle;

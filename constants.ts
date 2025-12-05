@@ -21,7 +21,9 @@ export const ASSETS = {
   GAME_OVER_SOUNDS: [
     'https://media.vocaroo.com/mp3/1kmbNgSgMVtm',
     'https://media.vocaroo.com/mp3/1n7ySTXGJLjK'
-  ]
+  ],
+  // Sound played when entering the "Get Ready" screen
+  GAME_START_SOUND: 'https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3'
 };
 
 export const PHYSICS = {

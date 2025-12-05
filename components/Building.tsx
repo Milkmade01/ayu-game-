@@ -1,17 +1,17 @@
 
 import React from 'react';
-import { Obstacle } from '../types';
 import { DIMENSIONS } from '../constants';
 
 interface BuildingProps {
-  obstacle: Obstacle;
+  obstacle: any;
 }
 
-export const Building: React.FC<BuildingProps> = ({ obstacle }) => {
+// Access React from global scope
+const Building: React.FC<BuildingProps> = ({ obstacle }) => {
   const bottomBuildingHeight = DIMENSIONS.GAME_HEIGHT - obstacle.gapTop - obstacle.gapHeight;
 
   return (
-    <>
+    <React.Fragment>
       <style>
         {`
           .building-pattern {
@@ -84,6 +84,8 @@ export const Building: React.FC<BuildingProps> = ({ obstacle }) => {
              </div>
         </div>
       </div>
-    </>
+    </React.Fragment>
   );
 };
+
+export default Building;
